@@ -11,6 +11,9 @@ import sys
 import re
 import bs4
 
+'''copy from CSDN
+https://blog.csdn.net/zhj082/article/details/80531628
+'''
 def chesksum(data):
     """
     校验
@@ -100,7 +103,7 @@ def ping(host):
     else:
         print("[{0}]Fail", time.time())
         return False
-
+'''Copy end'''
 
 def login():
     browser.get("http://10.80.20.9:8080/portal/templatePage/20160111161839093/login_custom.jsp")
@@ -112,8 +115,9 @@ def login():
             try:
                 browser.find_element_by_link_text("上线").click()
                 time.sleep(0.5)
-                if bs4.BeautifulSoup(browser.page_source,"lxml").find_all(text="E63032:密码错误").__len__() == 0:
+                if re.search(bs4.BeautifulSoup(browser.page_source,"lxml").find_all(id="id_errorMessage").__str__(), "密码错误"):
                     print("账号/密码错误")
+                    input()
                     break
                 if "http://10.80.20.9:8080/portal/templatePage/20160111161839093/login_custom.jsp" != browser.current_url:
                     break
