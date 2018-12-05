@@ -10,6 +10,8 @@ from selenium.webdriver.common.keys import Keys
 import sys
 import re
 import bs4
+from selenium.webdriver.chrome.options import Options
+
 
 '''copy from CSDN
 https://blog.csdn.net/zhj082/article/details/80531628
@@ -98,10 +100,10 @@ def ping(host):
             fail += 1
             'print("请求超时。")'
     if fail <=3:
-        print("Success", time.time())
+        print("[{0}] Success".format(time.asctime(time.localtime(time.time()))))
         return True
     else:
-        print("[{0}]Fail", time.time())
+        print("**[{0}] Fail**".format(time.asctime(time.localtime(time.time()))))
         return False
 '''Copy end'''
 
@@ -115,7 +117,7 @@ def login():
             try:
                 browser.find_element_by_link_text("上线").click()
                 time.sleep(0.5)
-                if re.search(bs4.BeautifulSoup(browser.page_source,"lxml").find_all(id="id_errorMessage").__str__(), "密码错误"):
+                if re.search('密码错误',bs4.BeautifulSoup(browser.page_source,"lxml").find_all(id="id_errorMessage").__str__()):
                     print("账号/密码错误")
                     input()
                     break
@@ -142,11 +144,16 @@ def login():
 
 def main():
     global browser
-    browser = webdriver.Chrome()
+    chrome_option = Options()
+    chrome_option.add_argument('--headless')
+    chrome_option.add_argument('--disable-gpu')
+    browser = webdriver.Chrome(chrome_options=chrome_option)
     login()
     while True:
         if not ping("baidu.com"):
             login()
         time.sleep(10)
 
-main()
+
+if __name__ == "__main__":
+    main()
