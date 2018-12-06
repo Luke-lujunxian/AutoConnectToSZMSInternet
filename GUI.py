@@ -11,11 +11,13 @@ class MainWindow(QDialog):
 
         #Online = QPushButton("Online")
         #Online.clicked.connect(Auto_connect.main())
-        #self.Offline.clicked.connect(self.connect())
+        self.Online.clicked.connect(self.Onlinefun)
 
-    #def connect(self):
-     #   t1 = threading.Thread(target=Auto_connect.main())
-      #  t1.start()
+    @staticmethod
+    def Onlinefun():
+        t1 = threading.Thread(target=Auto_connect.main)
+        t1.start()
+       # print(1)
 
 
 app = QApplication(sys.argv)
