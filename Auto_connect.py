@@ -5,7 +5,7 @@ import select
 from selenium import webdriver
 import selenium
 from selenium.common.exceptions import UnexpectedAlertPresentException
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from selenium.webdriver.common.keys import Keys
 import sys
 import re
@@ -95,7 +95,8 @@ def ping(host):
         times = reply_ping(send_request_ping_time,rawsocket,data_Sequence + i)
         if times > 0:
             'print("来自 {0} 的回复: 字节=32 时间={1}ms".format(addr,int(times*1000)))'
-            time.sleep(0.7)
+            #time.sleep(0.7)
+            break
         else:
             fail += 1
             'print("请求超时。")'
@@ -107,12 +108,13 @@ def ping(host):
         return False
 '''Copy end'''
 
-def login():
+def login(Username, Password):
     browser.get("http://10.80.20.9:8080/portal/templatePage/20160111161839093/login_custom.jsp")
     time.sleep(1)
+    retry_times = 0
     try:
-        browser.find_element_by_name("id_userName").send_keys("zhchen")
-        browser.find_element_by_name("id_userPwd").send_keys("zhchen")
+        browser.find_element_by_name("id_userName").send_keys(Username)
+        browser.find_element_by_name("id_userPwd").send_keys(Password)
         while True:
             try:
                 browser.find_element_by_link_text("上线").click()
@@ -129,7 +131,11 @@ def login():
                 if "http://10.80.20.9:8080/portal/templatePage/20160111161839093/login_custom.jsp" != browser.current_url:
                     break
                 else:
+                    if retry_times*0.5 > 5:
+                        print("连接超时")
+                        break
                     time.sleep(0.5)
+                    retry_times += 1
     except NoSuchElementException:
         try:
             if re.search("ERR_INTERNET_DISCONNECTED", browser.find_element_by_class_name("error-code").text):
@@ -142,17 +148,35 @@ def login():
             print("Unknown Error")
 
 
-def main():
+
+
+flag = False
+def main(Mes,Username="zhchen", Password="zhchen"):
     global browser
     chrome_option = Options()
     chrome_option.add_argument('--headless')
     chrome_option.add_argument('--disable-gpu')
     browser = webdriver.Chrome(chrome_options=chrome_option)
-    login()
+
+    login(Username, Password)
     while True:
+        if Mes.isSet() or flag or browser == -1:
+            print("Process End")
+            break
         if not ping("baidu.com"):
-            login()
-        time.sleep(10)
+            login(Username, Password)
+        time.sleep(3)
+    shoutDown()
+
+
+def shoutDown():
+    try:
+        browser.close()
+    except NameError:
+        print("并未上线")
+    except WebDriverException:
+        print("多次offline")
+    print("已下线")
 
 
 if __name__ == "__main__":

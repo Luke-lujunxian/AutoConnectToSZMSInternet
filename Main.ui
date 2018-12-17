@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>链接保持器 v0.0.1 alpha</string>
   </property>
   <widget class="QCheckBox" name="checkBox">
    <property name="geometry">
@@ -63,7 +63,17 @@
        <widget class="QLineEdit" name="InputAccount"/>
       </item>
       <item>
-       <widget class="QLineEdit" name="InputPassword"/>
+       <widget class="QLineEdit" name="InputPassword">
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="inputMethodHints">
+         <set>Qt::ImhHiddenText</set>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
