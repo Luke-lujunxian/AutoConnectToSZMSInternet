@@ -23,13 +23,23 @@ class MainWindow(QDialog):
         super(QDialog, self).__init__(parent)
         loadUi('Main.ui', self)
         #self.setFixedSize(self.sizeHint())
-
+        #QLineEdit.PasswordEchoOnEdit()
         #Online = QPushButton("Online")
         #Online.clicked.connect(Auto_connect.main())
         self.InputAcu = self.InputAccount
         self.InputPas = self.InputPassword
+        self.InputPas.setEchoMode(QLineEdit.Password)
         self.Online.clicked.connect(self.Onlinefun)
         self.Offline.clicked.connect(self.Offlinefun)
+        try:
+            data = open("Data.dat", 'r')
+            lines = data.readlines()
+            self.InputAcu.setText(lines[0])
+            self.InputPas.setText(lines[1])
+        except FileNotFoundError:
+            pass
+        except IndexError:
+            pass
 
 
 
@@ -48,9 +58,16 @@ class MainWindow(QDialog):
         if self.Threads.__len__() == 0:
             t1 = threading.Thread(target=Auto_connect.main,args=(Endevent, self.Username, self.Password))
             t1.start()
+            t1.is_alive()
+            t1.isAlive()
             self.Threads.append(t1)
         else:
-            print("已启动")
+            temp = self.Threads.pop()
+            if temp.isAlive():
+                print("已启动")
+                self.Threads.append(temp)
+            else:
+                self.Onlinefun()
 
 
 

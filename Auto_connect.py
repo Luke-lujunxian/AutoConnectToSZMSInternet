@@ -11,6 +11,7 @@ import sys
 import re
 import bs4
 from selenium.webdriver.chrome.options import Options
+from Crypto.Cipher import AES
 
 
 '''copy from CSDN
@@ -113,7 +114,8 @@ def login(Username, Password):
     time.sleep(1)
     retry_times = 0
     try:
-        browser.find_element_by_name("id_userName").send_keys(Username)
+        browser.find_element_by_name("id_userName").send_keys(Username[0:-1])
+        # \n读取成了回车，直接提交了，需要去掉
         browser.find_element_by_name("id_userPwd").send_keys(Password)
         while True:
             try:
@@ -121,15 +123,15 @@ def login(Username, Password):
                 time.sleep(0.5)
                 if re.search('密码错误',bs4.BeautifulSoup(browser.page_source,"lxml").find_all(id="id_errorMessage").__str__()):
                     print("账号/密码错误")
-                    input()
-                    break
+                    #input()
+                    return -1
                 if "http://10.80.20.9:8080/portal/templatePage/20160111161839093/login_custom.jsp" != browser.current_url:
                     break
             except UnexpectedAlertPresentException:
                 browser.switch_to.alert.accept()
             except NoSuchElementException:
                 if "http://10.80.20.9:8080/portal/templatePage/20160111161839093/login_custom.jsp" != browser.current_url:
-                    break
+                    return 0
                 else:
                     if retry_times*0.5 > 5:
                         print("连接超时")
@@ -158,7 +160,27 @@ def main(Mes,Username="zhchen", Password="zhchen"):
     chrome_option.add_argument('--disable-gpu')
     browser = webdriver.Chrome(chrome_options=chrome_option)
 
-    login(Username, Password)
+    if login(Username, Password) != -1:
+        #Password = Encryp(Username, Password)
+        try:
+            data = open("Data.dat", 'r+')
+            lines = data.readlines()
+            try:
+                if lines[0] == Username and lines[1] == Password:
+                    pass
+                else:
+                    raise IndexError
+            except IndexError:
+                data.seek(0)
+                data.writelines(Username+'\n')
+                data.writelines(Password)
+        except FileNotFoundError:
+            data = open("Data.dat", 'w+')
+            data.writelines(Username+'\n')
+            data.writelines(Password)
+        finally:
+            data.close()
+
     while True:
         if Mes.isSet() or flag or browser == -1:
             print("Process End")
@@ -178,6 +200,24 @@ def shoutDown():
         print("多次offline")
     print("已下线")
 
+
+def Encryp(Username, Pasword):
+    return Pasword
+    if Username.__len__() > 16:
+        Username = Username[0:17]
+    elif Username.__len__() < 16:
+        Username = Username + (16-Username.__len__())*"0"
+    Enc = AES.new(Username, AES.MODE_CBC, Username[-1])
+    return Enc.encrypt(Pasword)
+
+def Deceyp(Username, Pasword):
+    return Pasword
+    if Username.__len__() > 16:
+        Username = Username[0:17].encode('utf-8')
+    elif Username.__len__() < 16:
+        Username = (Username + (16-Username.__len__())*"0").encode('utf-8')
+    Dec = AES.new(Username, AES.MODE_CBC, Username)
+    return Dec.decrypt(Pasword)
 
 if __name__ == "__main__":
     main()
